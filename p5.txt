@@ -69,11 +69,12 @@ Sí, la IP 192.168.1.34 ya nos indicaba que estamos dentro de una red local, ade
  ** ¿Qué dirección IP tiene el servidor Registrar?
 86.64.162.35
  ** ¿A qué puerto (del servidor Registrar) se envían los paquetes SIP?
-5063
+5060
  ** ¿Qué método SIP utiliza el UA para registrarse?
 Utiliza el método REGISTER para registrarse.
  ** Además de REGISTER, ¿qué instrucciones SIP entiende el UA?
-INVITE,ACK,BYE,CANCEL, OPTIONS, PRACK, SUSCRIBE, NOTIFY, PUBLISH, INFO,REFER, MESSAGE y UPDATE. Aunque usualmente los más usados son los 5 primeros.
+INVITE,ACK,BYE,CANCEL, OPTIONS, PRACK, SUSCRIBE, NOTIFY, PUBLISH, INFO,REFER, MESSAGE y UPDATE son los métodos existentes. Si bien este caso, solo se permiten algunos de ellos, el campo allow nos los indica.
+Allow: INVITE,ACK,OPTIONS,BYE,CANCEL,NOTIFY,REFER,MESSAGE
 
 
 
@@ -81,25 +82,35 @@ INVITE,ACK,BYE,CANCEL, OPTIONS, PRACK, SUSCRIBE, NOTIFY, PUBLISH, INFO,REFER, ME
 
 9. Fijémonos en las tramas siguientes a la número 46:
  ** ¿Se registra con éxito en el primer intento?
+No, recibe una respueta 401 Unauthorized.
  ** ¿Cómo sabemos si el registro se ha realizado correctamente o no?
+Como he dicho antes, mirando la trama de respuesta de SIP, la 50, que nos da el mensaje 401 de no autorizado.
  ** ¿Podrías identificar las diferencias entre el primer intento y el segundo de registro? (fíjate en el tamaño de los paquetes y mira a qué se debe el cambio)
+EL primer request de REGISTER mide 523 bytes mientras que el segundo mide 712. Esto se debe a que la segunda request de REGISTER contiene el campo Authorization en la cabecera lo que le permite registrarse.
  ** ¿Cuánto es el valor del tiempo de expiración de la sesión? Indica las unidades.
-
+3600 segundos.
 
 10. Una vez registrados, podemos efectuar una llamada. Vamos a probar con el servicio de eco de Ekiga que nos permite comprobar si nos hemos conectado correctamente. El servicio de eco tiene la dirección sip:500@ekiga.net. Veamos el INVITE de cerca.
  ** ¿Puede verse el nombre del que efectúa la llamada, así como su dirección SIP?
+Si, como se puede ver en el campo from, Gregorio Robles con dirección sip grex@ekiga.net.
  ** ¿Qué es lo que contiene el cuerpo de la trama? ¿En qué formato/protocolo está?
+Contiene la información de la sesión que se desea establecer, en protocolo SDP.
  ** ¿Tiene éxito el primer intento? ¿Cómo lo sabes?
+No, ya que se recibe una respuesta SIP en la siguiente trama indicando 407  Proxy Authentication error
  ** ¿En qué se diferencia el segundo INVITE más abajo del primero? ¿A qué crees que se debe esto?
-
+El segundo INVITE es más grande (1181 bytes en lugar de 744 del primero) y esto se debe a que contiene el campo Proxy Authorization  en la cabecera necesario para establecer la conexión.
 
 11. Una vez conectado, estudia el intercambio de tramas.
  ** ¿Qué protocolo(s) se utiliza(n)? ¿Para qué sirven estos protocolos?
+Se utiliza RTP principalmente que sirve para la tansmición de texto, audio o video en tiempo real, h.261 que va sobre RTP permite la compresión de video, RTCP que sirve para mejorar la calidad de servicio  RTP y dar información de control de RTP y finalmente ARP que sirve para saber la dirección MAC de una máquina que tiene una IP determinada.
  ** ¿Cuál es el tamaño de paquete de los mismos?
+Los paquetes RTP en si miden 180 bytes
  ** ¿Se utilizan bits de padding?
+No (Padding False)
  ** ¿Cuál es la periodicidad de los paquetes que se envían?
+Aproximadamente cada 0.02 segundos, al menos al principio de la comunicación, conforme pasa al tiempo es cada vez más eficiente la comunicación y se evnían más rápido
  ** ¿Cuántos bits/segundo estamos enviando?
-
+Al principio al menos, el bitrate sería 72000 bits por segundo.
 
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
