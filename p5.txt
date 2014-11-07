@@ -117,36 +117,49 @@ Al principio al menos, el bitrate sería 72000 bits por segundo.
 
 12. Vamos a ver más a fondo el intercambio RTP. En Telephony hay una opción RTP. Empecemos mirando los flujos RTP.
  ** ¿Cuántos flujos hay? ¿por qué?
+Dos flujos, podemos observar que hay dos fuentes, una de video en el puerto 5014 con codificación h261 y otra de audio en el puerto 5010 codificada en g.711
  ** ¿Cuántos paquetes se pierden?
+Ninguno, Telephony indica package loss de 0.0%
  ** ¿Cuál es el valor máximo del delta? ¿Y qué es lo que significa el valor de delta?
+1290.48, representa el el valor máximo existente entre el envio de los paquetes, es decir, es el intevalo de tiempo grande entre el envio de dos paquetes RTP consecutivos y está expresado en milisegundos.
  ** ¿Cuáles son los valores de jitter (medio y máximo)? ¿Qué quiere decir eso? ¿Estamos ante una conversación de calidad?
-
+En cuanto al flujo de audio el jiiter máximo es 119.64 y el medio es de 42.50. Mientras que el jitter máximo de video es 183.10 y su jiiter medio es de 153.24 (Todos estos tiempos expresados en milisegundos).
+ Sí, se trata de una conversación de calidad, ya que un jitter medio inferior a los 100 ms se considera aceptable para una conversación, y el jitter medio del audio es de 42.50.
 
 13. Elige un paquete RTP de audio. Analiza el flujo de audio en Telephony -> RTP -> Stream Analysis.
  ** ¿Cuánto valen el delta y el jitter para el primer paquete que ha llegado?
+Tiene valor 0.0 en ambos parámetros.
  ** ¿Podemos saber si éste es el primer paquete que nos han enviado?
+Sí, el número de sequencia del paquete, y el marker del paquete RTP que es TRUE nos indica que se trata del primer paquete RTP de la comunicación.
  ** Los valores de jitter son menores de 10ms hasta un paquete dado. ¿Cuál?
+Hasta el paquete 247 que tiene un jitter de 38.82
  ** ¿A qué se debe el cambio tan brusco del jitter?
+A un valor muy grande de la delta (554.74 ms), lo cual es un cambio abrupto en la velocidad de transmición de los paquetes.
  ** ¿Es comparable este cambio con el tiempo desde la recepción del paquete anterior? ¿Por qué?
+Sí, ya que el jitter varía en función de la delta que nos dice la diferencia de tiempo entre el envio de un paquete y el anterior. Así que el paquete llegará mucho más tarde comparado con los enviados anteriormente.
  ** ¿Cuál es la dependencia entre el tiempo transcurrido desde el paquete anterior y el valor de jitter?
-
+Dado que la fórmula que se una para calcular el jitter es J(i) = J(i-1) + (|D(i-1,i)| - J(i-1))/16 , donde D(i-1,i) es la diferencia de tiempo de llegada entre un paquete y su aterior, entonces la diferencia |D(i-1,i)| = J(i) + J(i-1))/16 - J(i-1) . Donde J(i-1) es el jitter del paquete anterior.
 
 14. En Telephony selecciona el menú VoIP calls. Verás que se lista la llamada de voz IP capturada en una ventana emergente. Selecciona esa llamada y pulsa el botón Graph.
  ** ¿Cuánto dura la conversación?
+24 segundos aproximadamente. NO puedo verlo bien!, se cierra wireshark, lo deduzco al mirar PLay, no me hace el grafico con FLOW.
  ** ¿Cuáles son sus SSRC? ¿Por qué hay varios SSRCs? ¿Hay CSRCs?
 
 
 15. Identifica la trama donde se finaliza la conversación.
  ** ¿Qué método SIP se utiliza?
+BYE
  ** ¿En qué trama(s)?
+EN las tramas 924,925, 927 y 933 se envian los BYE request. Estos son respondidos con 200 OK en las tramas de 938 a 941.
  ** ¿Por qué crees que se envía varias veces?
-
-
+ Debido a que UDP es un protocolo no fiable y podrían perderse estos BYE requests. Como indica el RFC de SIP: "For UDP, reliability is achieved using retransmission", así que usamos retansmición para tener fiabilidad.
 16. Finalmente, se cierra la aplicación de VozIP.
  ** ¿Por qué aparece una instrucción SIP del tipo REGISTER?
+Porque el usuario (user agent) quiere que se le borre de la lista del servidor ( Esto se indica mediante el valor 0 en el parámetro Expires)
  ** ¿En qué trama sucede esto?
+Entre las tramas 950 y 953, el primer REGISTER se envió sin la información de authorization por lo que la máquina del usuario tuvo que reenviar el request con dicha información hasta obtener el 200 OK
  ** ¿En qué se diferencia con la instrucción que se utilizó con anterioridad (al principio de la sesión)?
-
+El valor del expires, en este caso e es 0 y el del principio de la sesión es 3600.
 
 
 [Al terminar el ejercicio es recomendable hacer commit de los ficheros modificados]
